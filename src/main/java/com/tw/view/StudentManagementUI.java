@@ -16,16 +16,29 @@ public class StudentManagementUI {
     HashMap<String, String> nameCourse = new HashMap<>();
     HashMap<Integer, String> courseMap = new HashMap<>();
     HashMap<String, ArrayList<String>> grades = new HashMap<>();
+    ArrayList<Integer> totalGrade = new ArrayList<>();
+    ArrayList<Integer> prepareInput = new ArrayList<>();
+    Integer total = 0;
+    double average = 0.0;
+    int totalTemp = 0;
+
+
+    public StudentManagementUI() {
+    }
 
     HashMap<String, HashMap<String, Integer>> coursesMap = new HashMap<>();
     boolean flag = true;
-
     private BufferedReader bufferedReader;
 
     {
         bufferedReader = new BufferedReader(new InputStreamReader(System.in));
     }
 
+    public void setup() {
+        allCouses.clear();
+        grades.clear();
+        nameCourse.clear();
+    }
 
     public void printMainUI() {
         System.out.println("1.添加学生");
@@ -79,39 +92,49 @@ public class StudentManagementUI {
 
         System.out.println("=========================================");
         this.printGradeList();
-        grades = null;
         System.out.println("==========================================");
-        System.out.println(" 全班总分平均数：");
-        System.out.println("全班的总分中位数：");
+        System.out.println("全班总分平均数：" + totalTemp / grades.size());
+        System.out.println("全班的总分中位数："+this.finaMiddleNumber(totalGrade));
     }
+
     public boolean verifyInputFormat() throws Exception {
         courses = course.setCourses();
+        ArrayList<String> tempCouse = new ArrayList<>();
         for (Course temp : courses) {
             courseMap.put(temp.getCourseId(), temp.getCourseName());
         }
         String input = "";
         input = bufferedReader.readLine();
+
+        System.out.println(input);
+
         String[] inputArray = input.split(",");
         System.out.println(inputArray.length);
         String courseName;
         String courseGrade;
         String studentName = "";
         studentName = inputArray[0];
+
+        System.out.println(studentName);
         for (int i = 0; i < inputArray.length; i++) {
+            if (i == 0) {
+                if (grades.containsKey(inputArray[i])) {
+                    flag = false;
+                    break;
+                }
+            }
             if (i >= 2) {
                 if (!inputArray[i].contains(":")) {
                     flag = false;
                 } else {
                     int temp = inputArray[i].indexOf(":");
-
                     courseName = inputArray[i].substring(0, temp);
                     courseGrade = inputArray[i].substring(temp + 1, inputArray[i].length());
                     nameCourse.put(courseName, courseGrade);
                     if (courseMap.containsValue(courseName)) {
-                        System.out.println(courseName);
-                        System.out.println(courseGrade);
                         if (Integer.valueOf(courseGrade) >= 0 && Integer.valueOf(courseGrade) <= 100) {
-                            allCouses.add(courseGrade);
+                            this.allCouses.add(courseGrade);
+                            tempCouse.add(courseGrade);
                         } else {
                             flag = false;
                         }
@@ -123,7 +146,7 @@ public class StudentManagementUI {
         }
         if (flag) {
             System.out.println("学生" + studentName + "的成绩被添加");
-            grades.put(studentName, allCouses);
+            grades.put(studentName, tempCouse);
             System.out.println(grades);
         } else {
             System.out.println(ADD_STUDENT_FAILURE);
@@ -139,14 +162,12 @@ public class StudentManagementUI {
 
     public void printGradeList() {
         int courseNumber = 0;
-        double total = 0;
-        double average = 0.0;
+
         Iterator<Map.Entry<String, ArrayList<String>>> entries = grades.entrySet().iterator();
         while (entries.hasNext()) {
             Map.Entry<String, ArrayList<String>> entry = entries.next();
             System.out.print(entry.getKey() + "|");
-            for (String temp : entry.getValue()
-                    ) {
+            for (String temp : entry.getValue()) {
                 System.out.print(temp + "|");
                 courseNumber++;
                 total += Integer.valueOf(temp);
@@ -154,11 +175,26 @@ public class StudentManagementUI {
             average = total / courseNumber;
             System.out.print(average + "|");
             System.out.println(total);
+            totalGrade.add(total);
+            total = 0;
+            courseNumber = 0;
         }
-        grades.clear();
-        nameCourse.clear();
+        totalTemp = totalGrade.stream().mapToInt(i -> i).sum();
+    }
+
+    public Integer finaMiddleNumber(ArrayList<Integer> totalGrade) {
+        int size = totalGrade.size();
+        int medianNumber = 0;
+        totalGrade.stream().sorted((p1, p2) -> p1.compareTo(p2));
+        int index = size / 2;
+        if (size % 2 == 0) {
+            medianNumber = (totalGrade.get(index) + totalGrade.get(index - 1)) / 2;
+        } else {
+            medianNumber = totalGrade.get(index);
+        }
+        return medianNumber;
     }
 }
 
-//li,2,math:90,chinese:80,english:90
+//li,2,math:90,chinese:80,english:22
 //zhang,1,math:80,chinese:90,english:90
