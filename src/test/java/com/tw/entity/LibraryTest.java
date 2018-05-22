@@ -1,4 +1,4 @@
-package com.tw;
+package com.tw.entity;
 
 import org.junit.Test;
 
@@ -28,5 +28,4 @@ public class LibraryTest {
         assertEquals(mockedList.get(0), value);
 
     }
-
 }
